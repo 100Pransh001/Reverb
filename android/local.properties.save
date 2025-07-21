@@ -1,0 +1,5 @@
+sdk.dir=/Users/darshikasaxena/Library/Android/sdk
+ndk.dir=/Users/darshikasaxena/Library/Android/sdk/ndk/25.2.9519653flutter.sdk=/Users/darshikasaxena/Downloads/flutter
+flutter.buildMode=debug
+flutter.versionName=1.0.0
+flutter.versionCode=1
