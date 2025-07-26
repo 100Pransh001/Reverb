@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../ widgets/indicator_dot.dart';
+import '../../ widgets/indicator_dot.dart';
 
 class LookingForScreen extends StatelessWidget {
   final String? displayName;

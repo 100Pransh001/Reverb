@@ -1,36 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:reverb/screens/FriendlyMatchScreen.dart';
-import 'package:reverb/screens/MusicGenresScreen.dart';
+import 'package:reverb/screens/matching/FriendlyMatchScreen.dart';
+import 'package:reverb/screens/onboarding/MusicGenresScreen.dart';
 
 // Import screens (no duplicates)
-import 'screens/login_screen.dart';
+import 'screens/auth/login_screen.dart';
 import 'screens/genderscreen.dart';
 import 'screens/heightscreen.dart';
 import 'screens/agescreen.dart';
 import 'screens/interestedinscreen.dart';
-import 'screens/recovery_email_screen.dart';
-import 'screens/display_name_screen.dart';
-import 'screens/media_screen.dart';
-import 'screens/interests_screen.dart';
-import 'screens/pronouns_screen.dart';
-import 'screens/bio_screen.dart';
-import 'screens/looking_for_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/upcoming_events_screen.dart';
-import 'screens/event_detail_screen.dart';
-import 'screens/swipe_profiles_screen.dart' hide UserProfile;
-import 'screens/match_screen.dart';
-import 'screens/friendly_match_screen.dart';
-import 'screens/ChatsScreen.dart';
-import 'screens/profile_edit_screen.dart';
-import 'screens/profile_preview_screen.dart';
-import 'screens/match_loading_screen.dart';
-import 'screens/found_match_screen.dart';
-import 'screens/settings_screen.dart'; // Make sure the path is correct!
-import 'screens/notification_centre_screen.dart';
-import 'screens/signup_screen.dart';
-import 'screens/create_password_screen.dart';
+import 'screens/auth/recovery_email_screen.dart';
+import 'screens/onboarding/display_name_screen.dart';
+import 'screens/onboarding/media_screen.dart';
+import 'screens/onboarding/interests_screen.dart';
+import 'screens/onboarding/pronouns_screen.dart';
+import 'screens/onboarding/bio_screen.dart';
+import 'screens/onboarding/looking_for_screen.dart';
+import 'screens/main/home_screen.dart';
+import 'screens/events/upcoming_events_screen.dart';
+import 'screens/events/event_detail_screen.dart';
+import 'screens/matching/swipe_profiles_screen.dart' hide UserProfile;
+import 'screens/matching/match_screen.dart';
+import 'screens/matching/friendly_match_screen.dart';
+import 'screens/main/ChatsScreen.dart';
+import 'screens/profile/profile_edit_screen.dart';
+import 'screens/profile/profile_preview_screen.dart';
+import 'screens/matching/match_loading_screen.dart';
+import 'screens/matching/found_match_screen.dart';
+import 'screens/main/settings_screen.dart'; // Make sure the path is correct!
+import 'screens/main//notification_centre_screen.dart';
+import 'screens/auth/signup_screen.dart';
+import 'screens/auth/create_password_screen.dart';
 
 import 'models/event.dart';
 import 'models/user_profile.dart';

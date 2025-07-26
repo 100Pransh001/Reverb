@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../ widgets/indicator_dot.dart';
+import '../../ widgets/indicator_dot.dart';
 
 /// Screen for optionally collecting a recovery email from the user.
 /// - No back arrow; only system back gesture is handled.

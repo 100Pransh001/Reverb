@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../ widgets/reverb_nav_bar.dart';
-import '../models/event.dart';
+import '../../ widgets/reverb_nav_bar.dart';
+import '../../models/event.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final Event event;

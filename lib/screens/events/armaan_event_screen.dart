@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import '../main/home_screen.dart';
 import 'upcoming_events_screen.dart';
 
 class ArmaanEventScreen extends StatelessWidget {

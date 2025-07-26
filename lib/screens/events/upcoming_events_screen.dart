@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../ widgets/big_event_card.dart';
-import '../ widgets/reverb_nav_bar.dart';
-import '../models/event.dart';
+import '../../ widgets/big_event_card.dart';
+import '../../ widgets/reverb_nav_bar.dart';
+import '../../models/event.dart';
 
 class UpcomingEventsScreen extends StatelessWidget {
   const UpcomingEventsScreen({super.key});

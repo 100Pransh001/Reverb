@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-import '../ widgets/profile_picture_grid.dart';
-import '../ widgets/reverb_nav_bar.dart';
-import '../models/user_profile.dart';
+import '../../ widgets/profile_picture_grid.dart';
+import '../../ widgets/reverb_nav_bar.dart';
+import '../../models/user_profile.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   final UserProfile profile;

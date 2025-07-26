@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../ widgets/reverb_nav_bar.dart';
+import '../../ widgets/reverb_nav_bar.dart';
 
 class ChatUser {
   final String name;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../ widgets/profile_card.dart';
-import '../ widgets/reverb_nav_bar.dart';
-import '../models/user_profile.dart';
+import '../../ widgets/profile_card.dart';
+import '../../ widgets/reverb_nav_bar.dart';
+import '../../models/user_profile.dart';
 
 class ProfilePreviewScreen extends StatelessWidget {
   final UserProfile profile;

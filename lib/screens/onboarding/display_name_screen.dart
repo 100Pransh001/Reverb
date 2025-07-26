@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../ widgets/indicator_dot.dart';
+import '../../ widgets/indicator_dot.dart';
 import 'media_screen.dart';
 
 /// DisplayNameScreen: Lets user enter display name and navigate forward/back.

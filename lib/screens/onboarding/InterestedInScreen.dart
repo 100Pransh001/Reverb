@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../ widgets/indicator_dot.dart';
+import '../../ widgets/indicator_dot.dart';
 
 /// InterestedInScreen: Last onboarding step where user selects preference.
 /// Next is only enabled if the user has selected an option (cannot skip).

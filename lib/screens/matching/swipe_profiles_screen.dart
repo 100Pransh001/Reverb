@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:swipe_cards/swipe_cards.dart';
-import '../ widgets/reverb_nav_bar.dart';
+import '../../ widgets/reverb_nav_bar.dart';
 import 'match_screen.dart';
 import 'friendly_match_screen.dart'; // You must create this file as above
 

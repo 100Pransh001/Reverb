@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../ widgets/indicator_dot.dart';
+import '../../ widgets/indicator_dot.dart';
 
 // --------- Constants for age picker logic ---------
 const int kMinAge = 18;

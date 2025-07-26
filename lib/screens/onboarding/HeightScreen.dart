@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
-import '../ widgets/indicator_dot.dart';
+import '../../ widgets/indicator_dot.dart';
 
 /// 📏 HeightScreen: User enters their height (cm), with back/next navigation.
 /// This screen is part of the onboarding flow.

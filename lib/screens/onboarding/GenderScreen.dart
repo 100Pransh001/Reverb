@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../ widgets/indicator_dot.dart';
+import '../../ widgets/indicator_dot.dart';
 
 /// 👤 GenderScreen: Lets the user select their gender as part of onboarding.
 /// Keeps next button and progress indicator always at the bottom, with

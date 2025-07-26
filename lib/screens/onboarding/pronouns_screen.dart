@@ -1,80 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../ widgets/indicator_dot.dart';
+import '../../ widgets/indicator_dot.dart';
 
-/// InterestsScreen
-/// Lets user select interests, passes all onboarding data to next step.
-class InterestsScreen extends StatefulWidget {
+class PronounsScreen extends StatefulWidget {
   final String? displayName;
   final String? recoveryEmail;
   final List<String>? photos;
+  final List<String>? interests;
 
-  const InterestsScreen({
+  const PronounsScreen({
     Key? key,
     this.displayName,
     this.recoveryEmail,
     this.photos,
+    this.interests,
   }) : super(key: key);
 
   @override
-  State<InterestsScreen> createState() => _InterestsScreenState();
+  State<PronounsScreen> createState() => _PronounsScreenState();
 }
 
-class _InterestsScreenState extends State<InterestsScreen> {
-  final List<String> interests = [
-    'Music Enthusiast', 'Movies', 'Cooking', 'Book Nerd',
-    'Boating', 'Gambling', 'Video Games', 'Design',
-    'Swimming', 'Videography', 'Art', 'Athlete',
-  ];
-  final Set<String> selectedInterests = {};
+class _PronounsScreenState extends State<PronounsScreen> {
+  final TextEditingController _pronounsController = TextEditingController();
 
-  void _toggleInterest(String interest) {
-    setState(() {
-      if (selectedInterests.contains(interest)) {
-        selectedInterests.remove(interest);
-      } else {
-        selectedInterests.add(interest);
-      }
-    });
-  }
-
-  /// Navigates to the next screen, passing all collected data.
   void _navigateNext() {
-    context.go('/pronouns', extra: {
+    final pronouns = _pronounsController.text.trim();
+    // Forward all collected data + pronouns
+    context.go('/bio', extra: {
       'displayName': widget.displayName,
       'recoveryEmail': widget.recoveryEmail,
       'photos': widget.photos,
-      'interests': selectedInterests.toList(),
+      'interests': widget.interests,
+      'pronouns': pronouns,
     });
   }
 
-  /// Optional: Allow going back to MediaScreen with existing data
   void _navigateBack() {
-    context.go('/media', extra: {
+    // Go back to InterestsScreen, pass all data (except pronouns)
+    context.go('/interests', extra: {
       'displayName': widget.displayName,
       'recoveryEmail': widget.recoveryEmail,
       'photos': widget.photos,
+      'interests': widget.interests,
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-          // Background image
+          // Background Image
           SizedBox.expand(
             child: Image.asset(
-              'assets/interests_bg.png',
+              'assets/pronouns_bg.png',
               fit: BoxFit.cover,
             ),
           ),
-          // Gradient overlay for readability
+          // Gradient Overlay
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.black.withOpacity(0.4),
+                  Colors.black.withOpacity(0.3),
                   Colors.black.withOpacity(0.7),
                 ],
                 begin: Alignment.topCenter,
@@ -82,17 +71,19 @@ class _InterestsScreenState extends State<InterestsScreen> {
               ),
             ),
           ),
+          // Foreground UI
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Back button (optional)
+                  // Back Button
                   Align(
                     alignment: Alignment.topLeft,
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 28),
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white, size: 28),
                       onPressed: _navigateBack,
                       tooltip: 'Back',
                     ),
@@ -100,69 +91,54 @@ class _InterestsScreenState extends State<InterestsScreen> {
                   const SizedBox(height: 12),
                   // Heading
                   const Text(
-                    "Interests",
+                    "Enter your\nPronouns",
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
+                      height: 1.3,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // Subtitle
+                  // Subtext
                   const Text(
-                    "Select a few of your interests to match with\nusers who have similar things in common",
+                    "Add pronouns to display them on\nyour profile",
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.white70,
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  // Interest tags
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: interests.map((interest) {
-                          final isSelected = selectedInterests.contains(interest);
-                          return GestureDetector(
-                            onTap: () => _toggleInterest(interest),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 10,
-                                horizontal: 16,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isSelected ? Colors.pinkAccent : Colors.transparent,
-                                borderRadius: BorderRadius.circular(30),
-                                border: Border.all(color: Colors.white),
-                              ),
-                              child: Text(
-                                interest,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
+                  const SizedBox(height: 40),
+                  // Input Field
+                  TextField(
+                    controller: _pronounsController,
+                    style: const TextStyle(color: Colors.white),
+                    cursorColor: Colors.pinkAccent,
+                    decoration: InputDecoration(
+                      hintText: 'Pronouns',
+                      hintStyle: const TextStyle(color: Colors.white70),
+                      enabledBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white70),
+                      ),
+                      focusedBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.pinkAccent),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  // Progress indicators (4th step active)
+                  const Spacer(),
+                  // Progress Indicators
                   const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IndicatorDot(active: false),
                       IndicatorDot(active: false),
                       IndicatorDot(active: false),
-                      IndicatorDot(active: true),
+                      IndicatorDot(active: false),
+                      IndicatorDot(active: true), // 5th step
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // Next button (arrow, bottom right)
+                  // Next button (arrow)
                   Align(
                     alignment: Alignment.bottomRight,
                     child: GestureDetector(

@@ -1,58 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-// import your reusable indicator dot if in separate file
-import '../ widgets/indicator_dot.dart';
+import '../../ widgets/indicator_dot.dart';
 
-class BioScreen extends StatefulWidget {
+class MusicGenresScreen extends StatefulWidget {
   final String? displayName;
   final String? recoveryEmail;
   final List<String>? photos;
   final List<String>? interests;
   final String? pronouns;
+  final String? bio;
 
-  const BioScreen({
+  const MusicGenresScreen({
     Key? key,
     this.displayName,
     this.recoveryEmail,
     this.photos,
     this.interests,
     this.pronouns,
+    this.bio,
   }) : super(key: key);
 
   @override
-  State<BioScreen> createState() => _BioScreenState();
+  State<MusicGenresScreen> createState() => _MusicGenresScreenState();
 }
 
-class _BioScreenState extends State<BioScreen> {
-  final TextEditingController _bioController = TextEditingController();
+class _MusicGenresScreenState extends State<MusicGenresScreen> {
+  final List<String> genres = [
+    'Pop', 'Hip-Hop', 'Jazz',
+    'Country', 'Folk', 'Rock',
+    'Soul', 'K-pop', 'Bollywood',
+    'R&B', 'Techno', 'Indie',
+  ];
 
-  @override
-  void dispose() {
-    _bioController.dispose();
-    super.dispose();
-  }
+  final Set<String> selectedGenres = {};
 
-  /// Navigates to next step, passes all collected data using GoRouter.
-  void _navigateNext() {
-    final bio = _bioController.text.trim();
-    context.go('/genres', extra: {
-      'displayName': widget.displayName,
-      'recoveryEmail': widget.recoveryEmail,
-      'photos': widget.photos,
-      'interests': widget.interests,
-      'pronouns': widget.pronouns,
-      'bio': bio,
+  void _toggleGenre(String genre) {
+    setState(() {
+      if (selectedGenres.contains(genre)) {
+        selectedGenres.remove(genre);
+      } else {
+        selectedGenres.add(genre);
+      }
     });
   }
 
-  /// Optional: Back navigation (customize as per your flow)
-  void _navigateBack() {
-    context.go('/pronouns', extra: {
+  void _navigateNext() {
+    context.go('/looking-for', extra: {
       'displayName': widget.displayName,
       'recoveryEmail': widget.recoveryEmail,
       'photos': widget.photos,
       'interests': widget.interests,
       'pronouns': widget.pronouns,
+      'bio': widget.bio,
+      'genres': selectedGenres.toList(),
+    });
+  }
+
+  void _navigateBack() {
+    context.go('/bio', extra: {
+      'displayName': widget.displayName,
+      'recoveryEmail': widget.recoveryEmail,
+      'photos': widget.photos,
+      'interests': widget.interests,
+      'pronouns': widget.pronouns,
+      'bio': widget.bio,
     });
   }
 
@@ -61,20 +72,18 @@ class _BioScreenState extends State<BioScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background image
           SizedBox.expand(
             child: Image.asset(
-              'assets/bio_bg.png',
+              'assets/genres_bg.png',
               fit: BoxFit.cover,
             ),
           ),
-          // Gradient overlay
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.black.withOpacity(0.3),
-                  Colors.black.withOpacity(0.7),
+                  Colors.black.withOpacity(0.2),
+                  Colors.black.withOpacity(0.6),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -87,7 +96,6 @@ class _BioScreenState extends State<BioScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Back button
                   Align(
                     alignment: Alignment.topLeft,
                     child: IconButton(
@@ -97,61 +105,64 @@ class _BioScreenState extends State<BioScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-
-                  // Heading
                   const Text(
-                    "Add an\nInteresting Bio",
+                    "Select your Favorite\nMusic Genres",
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
+                      height: 1.3,
                     ),
                   ),
                   const SizedBox(height: 10),
-
-                  // Subtext
                   const Text(
-                    "Don’t be shy! Show off your personality\nwith a good bio",
+                    "Pick your favorite genres, connect with\npeople with similar interests",
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.white70,
                     ),
                   ),
-                  const SizedBox(height: 40),
-
-                  // Bio input
-                  TextField(
-                    controller: _bioController,
-                    style: const TextStyle(color: Colors.white),
-                    cursorColor: Colors.pinkAccent,
-                    maxLines: 4,
-                    decoration: InputDecoration(
-                      hintText: 'Bio',
-                      hintStyle: const TextStyle(color: Colors.white70),
-                      enabledBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      focusedBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.pinkAccent),
-                      ),
+                  const SizedBox(height: 30),
+                  Expanded(
+                    child: Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: genres.map((genre) {
+                        final isSelected = selectedGenres.contains(genre);
+                        return GestureDetector(
+                          onTap: () => _toggleGenre(genre),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: isSelected ? Colors.pinkAccent : Colors.transparent,
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(color: Colors.white),
+                            ),
+                            child: Text(
+                              genre,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ),
-
-                  const Spacer(),
-
-                  // Page indicators (show correct step)
+                  const SizedBox(height: 20),
                   const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IndicatorDot(active: false),
                       IndicatorDot(active: false),
                       IndicatorDot(active: false),
-                      IndicatorDot(active: true), // You can adjust which dot is active
+                      IndicatorDot(active: false),
+                      IndicatorDot(active: true), // 5th step
                     ],
                   ),
                   const SizedBox(height: 20),
-
-                  // Next button (arrow style)
                   Align(
                     alignment: Alignment.bottomRight,
                     child: GestureDetector(
