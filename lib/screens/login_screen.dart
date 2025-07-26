@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -12,12 +13,148 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loginWithEmailPassword() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
+
+      // Sign in with Firebase Auth
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      if (userCredential.user != null) {
+        // Check if email is verified
+        if (!userCredential.user!.emailVerified) {
+          // Sign out the user
+          await FirebaseAuth.instance.signOut();
+
+          if (mounted) {
+            _showErrorMessage(
+              'Please verify your email before logging in. Check your inbox for the verification link.',
+            );
+          }
+          return;
+        }
+
+        // Login successful
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Login successful!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Navigate to main app - update route as needed
+          context.go('/home'); // Change this to your desired route
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+
+      switch (e.code) {
+        case 'user-not-found':
+          errorMessage = 'No user found with this email address.';
+          break;
+        case 'wrong-password':
+          errorMessage = 'Incorrect password. Please try again.';
+          break;
+        case 'invalid-email':
+          errorMessage = 'Invalid email address format.';
+          break;
+        case 'user-disabled':
+          errorMessage = 'This account has been disabled.';
+          break;
+        case 'too-many-requests':
+          errorMessage = 'Too many failed attempts. Please try again later.';
+          break;
+        case 'network-request-failed':
+          errorMessage = 'Network error. Please check your connection.';
+          break;
+        case 'invalid-credential':
+          errorMessage = 'Invalid email or password. Please try again.';
+          break;
+        default:
+          errorMessage = 'Login failed: ${e.message}';
+      }
+
+      _showErrorMessage(errorMessage);
+    } catch (e) {
+      _showErrorMessage('An unexpected error occurred. Please try again.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _forgotPassword() async {
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      _showErrorMessage('Please enter your email address first.');
+      return;
+    }
+
+    // Use consistent email validation (same as signup)
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+      _showErrorMessage('Please enter a valid email address.');
+      return;
+    }
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Password reset email sent to $email'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+
+      switch (e.code) {
+        case 'user-not-found':
+          errorMessage = 'No user found with this email address.';
+          break;
+        case 'invalid-email':
+          errorMessage = 'Invalid email address format.';
+          break;
+        default:
+          errorMessage = 'Failed to send reset email. Please try again.';
+      }
+
+      _showErrorMessage(errorMessage);
+    }
+  }
+
+  void _showErrorMessage(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    }
   }
 
   @override
@@ -67,52 +204,72 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 24),
 
-                          // 📧 Email Field with Gmail-only validation
+                          // 📧 Email Field with consistent validation
                           TextFormField(
                             controller: _emailController,
                             style: const TextStyle(color: Colors.white),
+                            keyboardType: TextInputType.emailAddress,
+                            enabled: !_isLoading,
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
+                              if (value == null || value.trim().isEmpty) {
                                 return 'Please enter your email';
                               }
-                              if (!RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$')
-                                  .hasMatch(value)) {
-                                return 'Enter a valid Gmail address';
+                              // Use same validation as signup screen
+                              if (!RegExp(
+                                r'^[^@]+@[^@]+\.[^@]+',
+                              ).hasMatch(value.trim())) {
+                                return 'Enter a valid email address';
                               }
                               return null;
                             },
-                            decoration: _inputDecoration("Gmail"),
+                            decoration: _inputDecoration("Email"),
                           ),
                           const SizedBox(height: 14),
 
-                          // 🔒 Password Field (8–12 character constraint)
+                          // 🔒 Password Field with visibility toggle
                           TextFormField(
                             controller: _passwordController,
-                            obscureText: true,
+                            obscureText: _obscurePassword,
                             style: const TextStyle(color: Colors.white),
+                            enabled: !_isLoading,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your password';
                               }
-                              if (value.length < 8 || value.length > 12) {
-                                return 'Password must be 8-12 characters';
+                              if (value.length < 8) {
+                                return 'Password must be at least 8 characters';
                               }
                               return null;
                             },
-                            decoration:
-                                _inputDecoration("Password (8-12 characters)"),
+                            decoration: _inputDecoration("Password").copyWith(
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.white70,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
+                            ),
                           ),
 
                           // 🆘 Forgot Password Link
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
-                              onPressed: () {
-                                // TODO: Connect to Forgot Password Flow
-                              },
-                              child: const Text(
+                              onPressed: _isLoading ? null : _forgotPassword,
+                              child: Text(
                                 "Forget password?",
-                                style: TextStyle(color: Colors.white),
+                                style: TextStyle(
+                                  color: _isLoading
+                                      ? Colors.grey
+                                      : Colors.white,
+                                ),
                               ),
                             ),
                           ),
@@ -121,32 +278,39 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // 🚪 Login Button
                           GestureDetector(
-                            onTap: () {
-                              if (_formKey.currentState!.validate()) {
-                                // TODO: Integrate with API before navigating
-                                context.go('/gender'); // Navigate on success
-                              }
-                            },
-                            child: Container(
-                              height: 50,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(25),
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFFDC2953),
-                                    Color(0xFFF78E36)
-                                  ],
-                                ),
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  "Log in",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                            onTap: _isLoading ? null : _loginWithEmailPassword,
+                            child: Opacity(
+                              opacity: _isLoading ? 0.7 : 1.0,
+                              child: Container(
+                                height: 50,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(25),
+                                  gradient: LinearGradient(
+                                    colors: _isLoading
+                                        ? [Colors.grey, Colors.grey]
+                                        : [
+                                            const Color(0xFFDC2953),
+                                            const Color(0xFFF78E36),
+                                          ],
                                   ),
+                                ),
+                                child: Center(
+                                  child: _isLoading
+                                      ? const CircularProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                        )
+                                      : const Text(
+                                          "Log in",
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
                                 ),
                               ),
                             ),
@@ -155,48 +319,87 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 20),
 
                           // ➖ Divider with "or"
-                          Row(
-                            children: const [
+                          const Row(
+                            children: [
                               Expanded(child: Divider(color: Colors.white70)),
                               Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 8),
-                                child: Text("or",
-                                    style: TextStyle(color: Colors.white)),
+                                child: Text(
+                                  "or",
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               ),
                               Expanded(child: Divider(color: Colors.white70)),
                             ],
                           ),
                           const SizedBox(height: 18),
 
-                          // 🔐 Social Logins (placeholder only)
-                          GestureDetector(
-                            onTap: () {
-                              // TODO: Google sign-in logic here
-                            },
-                            child: _socialLogin(
-                                "Continue with Google", 'assets/google.png'),
+                          // 🔐 Social Logins (disabled during loading)
+                          Opacity(
+                            opacity: _isLoading ? 0.5 : 1.0,
+                            child: GestureDetector(
+                              onTap: _isLoading
+                                  ? null
+                                  : () {
+                                      // TODO: Implement Google sign-in
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Google sign-in coming soon!',
+                                          ),
+                                          backgroundColor: Colors.orange,
+                                        ),
+                                      );
+                                    },
+                              child: _socialLogin(
+                                "Continue with Google",
+                                'assets/google.png',
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 12),
-                          GestureDetector(
-                            onTap: () {
-                              // TODO: Facebook sign-in logic here
-                            },
-                            child: _socialLogin(
-                                "Continue with Facebook", 'assets/facebook.png'),
+                          Opacity(
+                            opacity: _isLoading ? 0.5 : 1.0,
+                            child: GestureDetector(
+                              onTap: _isLoading
+                                  ? null
+                                  : () {
+                                      // TODO: Implement Facebook sign-in
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Facebook sign-in coming soon!',
+                                          ),
+                                          backgroundColor: Colors.orange,
+                                        ),
+                                      );
+                                    },
+                              child: _socialLogin(
+                                "Continue with Facebook",
+                                'assets/facebook.png',
+                              ),
+                            ),
                           ),
 
                           const SizedBox(height: 14),
 
-                          // 🆕 Sign Up Button (UPDATED)
+                          // 🆕 Sign Up Button
                           TextButton(
-                            onPressed: () {
-                              context.go('/signup'); // <--- Navigates to signup!
-                            },
-                            child: const Text(
+                            onPressed: _isLoading
+                                ? null
+                                : () {
+                                    context.go('/signup');
+                                  },
+                            child: Text(
                               "Sign up",
                               style: TextStyle(
-                                color: Colors.white,
+                                color: _isLoading ? Colors.grey : Colors.white,
                                 decoration: TextDecoration.underline,
+                                fontSize: 16,
                               ),
                             ),
                           ),
@@ -247,7 +450,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Text(
               text,
               style: const TextStyle(color: Colors.white, fontSize: 15),
-            )
+            ),
           ],
         ),
       ),

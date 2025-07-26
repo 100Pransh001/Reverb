@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reverb/screens/FriendlyMatchScreen.dart';
 import 'package:reverb/screens/MusicGenresScreen.dart';
-import 'package:reverb/screens/OtpScreen.dart';
 
 // Import screens (no duplicates)
 import 'screens/login_screen.dart';
@@ -75,9 +74,7 @@ final GoRouter router = GoRouter(
         return _buildTransitionPage(
           context,
           state,
-          DisplayNameScreen(
-            recoveryEmail: extra['recoveryEmail'] ?? "",
-          ),
+          DisplayNameScreen(recoveryEmail: extra['recoveryEmail'] ?? ""),
         );
       },
     ),
@@ -105,7 +102,9 @@ final GoRouter router = GoRouter(
           InterestsScreen(
             displayName: extra['displayName'] ?? "",
             recoveryEmail: extra['recoveryEmail'] ?? "",
-            photos: extra['photos'] is List<String> ? extra['photos'] : <String>[],
+            photos: extra['photos'] is List<String>
+                ? extra['photos']
+                : <String>[],
           ),
         );
       },
@@ -120,8 +119,12 @@ final GoRouter router = GoRouter(
           PronounsScreen(
             displayName: extra['displayName'] ?? "",
             recoveryEmail: extra['recoveryEmail'] ?? "",
-            photos: extra['photos'] is List<String> ? extra['photos'] : <String>[],
-            interests: extra['interests'] is List<String> ? extra['interests'] : <String>[],
+            photos: extra['photos'] is List<String>
+                ? extra['photos']
+                : <String>[],
+            interests: extra['interests'] is List<String>
+                ? extra['interests']
+                : <String>[],
           ),
         );
       },
@@ -136,8 +139,12 @@ final GoRouter router = GoRouter(
           BioScreen(
             displayName: extra['displayName'] ?? "",
             recoveryEmail: extra['recoveryEmail'] ?? "",
-            photos: extra['photos'] is List<String> ? extra['photos'] : <String>[],
-            interests: extra['interests'] is List<String> ? extra['interests'] : <String>[],
+            photos: extra['photos'] is List<String>
+                ? extra['photos']
+                : <String>[],
+            interests: extra['interests'] is List<String>
+                ? extra['interests']
+                : <String>[],
             pronouns: extra['pronouns'] ?? "",
           ),
         );
@@ -153,8 +160,12 @@ final GoRouter router = GoRouter(
           MusicGenresScreen(
             displayName: extra['displayName'] ?? "",
             recoveryEmail: extra['recoveryEmail'] ?? "",
-            photos: extra['photos'] is List<String> ? extra['photos'] : <String>[],
-            interests: extra['interests'] is List<String> ? extra['interests'] : <String>[],
+            photos: extra['photos'] is List<String>
+                ? extra['photos']
+                : <String>[],
+            interests: extra['interests'] is List<String>
+                ? extra['interests']
+                : <String>[],
             pronouns: extra['pronouns'] ?? "",
             bio: extra['bio'] ?? "",
           ),
@@ -171,11 +182,17 @@ final GoRouter router = GoRouter(
           LookingForScreen(
             displayName: extra['displayName'] ?? "",
             recoveryEmail: extra['recoveryEmail'] ?? "",
-            photos: extra['photos'] is List<String> ? extra['photos'] : <String>[],
-            interests: extra['interests'] is List<String> ? extra['interests'] : <String>[],
+            photos: extra['photos'] is List<String>
+                ? extra['photos']
+                : <String>[],
+            interests: extra['interests'] is List<String>
+                ? extra['interests']
+                : <String>[],
             pronouns: extra['pronouns'] ?? "",
             bio: extra['bio'] ?? "",
-            genres: extra['genres'] is List<String> ? extra['genres'] : <String>[],
+            genres: extra['genres'] is List<String>
+                ? extra['genres']
+                : <String>[],
           ),
         );
       },
@@ -189,7 +206,11 @@ final GoRouter router = GoRouter(
       path: '/event-detail',
       pageBuilder: (context, state) {
         final event = state.extra as Event;
-        return _buildTransitionPage(context, state, EventDetailScreen(event: event));
+        return _buildTransitionPage(
+          context,
+          state,
+          EventDetailScreen(event: event),
+        );
       },
     ),
     GoRoute(
@@ -236,13 +257,15 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/profile',
       pageBuilder: (context, state) {
-        final UserProfile profile = state.extra as UserProfile? ??
+        final UserProfile profile =
+            state.extra as UserProfile? ??
             UserProfile(
               name: "A",
               age: 19,
               pronouns: "she/her",
               photos: ['assets/my_profile.jpg'],
-              bio: "Low tolerance for BS, high standards for playlists. If you’re emotionally fluent and slightly unhinged (in a fun way), we’ll get along.",
+              bio:
+                  "Low tolerance for BS, high standards for playlists. If you’re emotionally fluent and slightly unhinged (in a fun way), we’ll get along.",
             );
         return _buildTransitionPage(
           context,
@@ -265,13 +288,15 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/profile/edit',
       pageBuilder: (context, state) {
-        final UserProfile profile = state.extra as UserProfile? ??
+        final UserProfile profile =
+            state.extra as UserProfile? ??
             UserProfile(
               name: "A",
               age: 19,
               pronouns: "she/her",
               photos: ['assets/my_profile.jpg'],
-              bio: "Low tolerance for BS, high standards for playlists. If you’re emotionally fluent and slightly unhinged (in a fun way), we’ll get along.",
+              bio:
+                  "Low tolerance for BS, high standards for playlists. If you’re emotionally fluent and slightly unhinged (in a fun way), we’ll get along.",
             );
         return _buildTransitionPage(
           context,
@@ -288,43 +313,49 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/friendly-match-loading',
-      pageBuilder: (context, state) =>
-          _buildTransitionPage(context, state, const FriendlyMatchLoadingScreen()),
+      pageBuilder: (context, state) => _buildTransitionPage(
+        context,
+        state,
+        const FriendlyMatchLoadingScreen(),
+      ),
     ),
     GoRoute(
       path: '/found-match',
       pageBuilder: (context, state) =>
           _buildTransitionPage(context, state, const FoundMatchScreen()),
     ),
-   GoRoute(
-  path: '/settings',
-  pageBuilder: (context, state) => 
-    _buildTransitionPage(context, state, const SettingsScreen()),
-),
-GoRoute(
-  path: '/notifications',
-  pageBuilder: (context, state) => 
-    _buildTransitionPage(context, state, const NotificationCentreScreen()),
-),
-GoRoute(
-  path: '/signup',
-  pageBuilder: (context, state) => _buildTransitionPage(context, state, const SignupScreen()),
-),
-GoRoute(
-  path: '/otp',
-  pageBuilder: (context, state) =>
-      MaterialPage(child: const OtpScreen()),
-),
-GoRoute(
-  path: '/create-password',
-  pageBuilder: (context, state) =>
-    _buildTransitionPage(context, state, const CreatePasswordScreen()),
-),
+    GoRoute(
+      path: '/settings',
+      pageBuilder: (context, state) =>
+          _buildTransitionPage(context, state, const SettingsScreen()),
+    ),
+    GoRoute(
+      path: '/notifications',
+      pageBuilder: (context, state) => _buildTransitionPage(
+        context,
+        state,
+        const NotificationCentreScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/signup',
+      pageBuilder: (context, state) =>
+          _buildTransitionPage(context, state, const SignupScreen()),
+    ),
+
+    GoRoute(
+      path: '/create-password',
+      pageBuilder: (context, state) =>
+          _buildTransitionPage(context, state, const CreatePasswordScreen()),
+    ),
   ],
 );
 
 CustomTransitionPage _buildTransitionPage(
-    BuildContext context, GoRouterState state, Widget child) {
+  BuildContext context,
+  GoRouterState state,
+  Widget child,
+) {
   return CustomTransitionPage(
     key: state.pageKey,
     child: child,

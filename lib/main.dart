@@ -1,8 +1,12 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'firebase_options.dart';
 import 'router.dart'; // Import the centralized GoRouter configuration
 
 // The main entry point of the app
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(ReverbApp());
 }
 
@@ -13,9 +17,9 @@ class ReverbApp extends StatelessWidget {
     // Using MaterialApp.router enables advanced navigation with go_router
     return MaterialApp.router(
       debugShowCheckedModeBanner: false, // Hides the debug banner
-      title: 'Reverb',                   // App name
+      title: 'Reverb', // App name
       theme: ThemeData(
-        primarySwatch: Colors.purple,    // Primary theme color
+        primarySwatch: Colors.purple, // Primary theme color
       ),
       // routerConfig links the app to your go_router setup in router.dart
       routerConfig: router,
