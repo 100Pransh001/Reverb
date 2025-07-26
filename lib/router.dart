@@ -5,10 +5,10 @@ import 'package:reverb/screens/onboarding/MusicGenresScreen.dart';
 
 // Import screens (no duplicates)
 import 'screens/auth/login_screen.dart';
-import 'screens/genderscreen.dart';
-import 'screens/heightscreen.dart';
-import 'screens/agescreen.dart';
-import 'screens/interestedinscreen.dart';
+import 'screens/onboarding/genderscreen.dart';
+import 'screens/onboarding/heightscreen.dart';
+import 'screens/onboarding/agescreen.dart';
+import 'screens/onboarding/interestedinscreen.dart';
 import 'screens/auth/recovery_email_screen.dart';
 import 'screens/onboarding/display_name_screen.dart';
 import 'screens/onboarding/media_screen.dart';
