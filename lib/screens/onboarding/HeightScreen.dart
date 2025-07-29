@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../ widgets/indicator_dot.dart';
 
 /// 📏 HeightScreen: User enters their height (cm), with back/next navigation.
@@ -16,6 +18,16 @@ class _HeightScreenState extends State<HeightScreen> {
   // Controller to capture user's height input
   final TextEditingController _heightController = TextEditingController();
 
+  /// Loading state for Firebase operations
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load existing height data when screen initializes
+    _loadExistingHeight();
+  }
+
   @override
   void dispose() {
     // Cleanup the controller to avoid memory leaks
@@ -23,13 +35,37 @@ class _HeightScreenState extends State<HeightScreen> {
     super.dispose();
   }
 
+  /// Load existing height data from Firebase (optional - for returning users)
+  Future<void> _loadExistingHeight() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user?.uid == null) return;
+
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .collection('user_profile')
+          .doc('height')
+          .get();
+
+      if (doc.exists && doc.data()?['height'] != null) {
+        setState(() {
+          _heightController.text = doc.data()!['height'].toString();
+        });
+      }
+    } catch (e) {
+      // Silently handle errors for loading existing data
+      debugPrint('Error loading existing height: $e');
+    }
+  }
+
   /// Handler for the back arrow – navigates user back to the gender selection screen
   void _handleBack() {
     context.go('/gender');
   }
 
-  /// Handler for the "Next" button – validates height and navigates forward if valid
-  void _handleNext() {
+  /// Handler for the "Next" button – validates height, saves to Firebase, and navigates forward
+  Future<void> _handleNext() async {
     final height = _heightController.text.trim();
 
     // Check if field is empty or non-numeric
@@ -45,8 +81,47 @@ class _HeightScreenState extends State<HeightScreen> {
       return;
     }
 
-    // Navigate to the AgeScreen, passing height as extra data
-    context.go('/age', extra: {'height': value});
+    // Save height to Firebase
+    setState(() => isLoading = true);
+
+    try {
+      // Get current user's uid
+      final user = FirebaseAuth.instance.currentUser;
+      if (user?.uid == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Save height to Firestore at users/{email_id}/user_profile/height
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .collection('user_profile')
+          .doc('height')
+          .set({
+            'height': value,
+            'unit': 'cm',
+            'updated_at': FieldValue.serverTimestamp(),
+          });
+
+      // Navigate to the AgeScreen after successful save
+      if (mounted) {
+        context.go('/age', extra: {'height': value});
+      }
+    } catch (e) {
+      // Show error message to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving height: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   /// Shows a modal error dialog with a custom message
@@ -64,7 +139,7 @@ class _HeightScreenState extends State<HeightScreen> {
           TextButton(
             child: const Text('OK', style: TextStyle(color: Colors.pinkAccent)),
             onPressed: () => Navigator.pop(context),
-          )
+          ),
         ],
       ),
     );
@@ -77,10 +152,7 @@ class _HeightScreenState extends State<HeightScreen> {
         children: [
           // --- Background image covers the whole screen ---
           SizedBox.expand(
-            child: Image.asset(
-              'assets/height_bg.png',
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset('assets/height_bg.png', fit: BoxFit.cover),
           ),
           // --- Gradient overlay to ensure foreground text is readable ---
           Container(
@@ -100,7 +172,11 @@ class _HeightScreenState extends State<HeightScreen> {
             child: Align(
               alignment: Alignment.topLeft,
               child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 28),
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                  size: 28,
+                ),
                 onPressed: _handleBack,
                 tooltip: 'Back',
               ),
@@ -127,10 +203,7 @@ class _HeightScreenState extends State<HeightScreen> {
                   // Subtitle
                   const Text(
                     "For a better experience and results,\nplease specify your height",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white70,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.white70),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 40),
@@ -146,9 +219,12 @@ class _HeightScreenState extends State<HeightScreen> {
                       controller: _heightController,
                       style: const TextStyle(color: Colors.white),
                       keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly], // Only allow numbers
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ], // Only allow numbers
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _handleNext(),
+                      enabled: !isLoading, // Disable input during loading
                       decoration: const InputDecoration(
                         border: InputBorder.none,
                         hintText: 'Enter your height (in cm)',
@@ -168,24 +244,31 @@ class _HeightScreenState extends State<HeightScreen> {
                     ],
                   ),
                   const SizedBox(height: 30),
-                  // Next button (arrow) – triggers validation and navigation
+                  // Next button (arrow) – triggers validation, Firebase save, and navigation
                   AnimatedOpacity(
-                    opacity: 1, // Always visible; you can make it conditional if needed
+                    opacity: !isLoading ? 1 : 0.5,
                     duration: const Duration(milliseconds: 200),
                     child: GestureDetector(
-                      onTap: _handleNext,
+                      onTap: !isLoading ? _handleNext : null,
                       child: Container(
                         width: 60,
                         height: 60,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.pinkAccent,
+                          color: !isLoading
+                              ? Colors.pinkAccent
+                              : Colors.white24,
                         ),
-                        child: const Icon(
-                          Icons.arrow_forward_rounded,
-                          color: Colors.white,
-                          size: 32,
-                        ),
+                        child: isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              )
+                            : const Icon(
+                                Icons.arrow_forward_rounded,
+                                color: Colors.white,
+                                size: 32,
+                              ),
                       ),
                     ),
                   ),

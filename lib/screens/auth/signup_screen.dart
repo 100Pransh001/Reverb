@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({Key? key}) : super(key: key);
@@ -96,19 +97,50 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
+  Future<void> _saveUserToFirestore(String email) async {
+    try {
+      // Get current user's UID
+      final String? uid = FirebaseAuth.instance.currentUser?.uid;
+
+      if (uid == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Save user data to Firestore using UID as document ID
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'email': email,
+        'createdAt': FieldValue.serverTimestamp(),
+        'emailVerified': true,
+      });
+    } catch (e) {
+      print('Error saving user to Firestore: $e');
+      // You can show an error message to user if needed
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving user data: ${e.toString()}'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    }
+  }
+
   void _checkEmailVerification() async {
+    final email = _emailController.text.trim();
+
     // Check every 3 seconds if email is verified
     while (!FirebaseAuth.instance.currentUser!.emailVerified) {
       await Future.delayed(const Duration(seconds: 3));
       await FirebaseAuth.instance.currentUser!.reload();
 
       if (FirebaseAuth.instance.currentUser!.emailVerified) {
-        // Email verified, navigate to create password screen
+        // Email verified, save to Firestore
+        await _saveUserToFirestore(email);
+
+        // Navigate to create password screen
         if (mounted) {
-          context.go(
-            '/create-password',
-            extra: {'email': _emailController.text.trim()},
-          );
+          context.go('/create-password', extra: {'email': email});
         }
         break;
       }

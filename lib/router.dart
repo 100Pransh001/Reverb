@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:reverb/screens/main/splash_screen.dart';
 import 'package:reverb/screens/matching/FriendlyMatchScreen.dart';
 import 'package:reverb/screens/onboarding/MusicGenresScreen.dart';
-
 // Import screens (no duplicates)
 import 'screens/auth/login_screen.dart';
 import 'screens/onboarding/genderscreen.dart';
@@ -40,7 +40,7 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/',
       pageBuilder: (context, state) =>
-          _buildTransitionPage(context, state, const LoginScreen()),
+          _buildTransitionPage(context, state, const GenderScreen()),
     ),
     GoRoute(
       path: '/gender',

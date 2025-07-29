@@ -129,10 +129,8 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
           ),
         );
 
-        // Navigate to login screen or home screen
-        context.go(
-          '/login',
-        ); // You can change this to '/home' if you want direct login
+        // Navigate to login screen
+        context.go('/');
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage;

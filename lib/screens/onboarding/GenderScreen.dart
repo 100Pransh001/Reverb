@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../ widgets/indicator_dot.dart';
 
 /// 👤 GenderScreen: Lets the user select their gender as part of onboarding.
@@ -16,14 +18,88 @@ class _GenderScreenState extends State<GenderScreen> {
   /// Stores which gender is selected (Male, Female, Others, or null if none)
   String? selectedGender;
 
+  /// Loading state for Firebase operations
+  bool isLoading = false;
+
   /// Updates selectedGender state when user taps a gender option
   void _handleGenderTap(String gender) {
     setState(() => selectedGender = gender);
   }
 
-  /// Navigates to height input screen, only allowed if a gender is selected
-  void _goToNextScreen() {
-    context.go('/height');
+  /// Saves gender data to Firebase and navigates to next screen
+  Future<void> _saveGenderAndContinue() async {
+    if (selectedGender == null) return;
+
+    setState(() => isLoading = true);
+
+    try {
+      // Get current user's email
+      final user = FirebaseAuth.instance.currentUser;
+      if (user?.uid == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Save gender to Firestore at users/{email_id}/user_profile/gender
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .collection('user_profile')
+          .doc('gender')
+          .set({
+            'gender': selectedGender,
+            'updated_at': FieldValue.serverTimestamp(),
+          });
+
+      // Navigate to next screen after successful save
+      if (mounted) {
+        context.go('/height');
+      }
+    } catch (e) {
+      // Show error message to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving gender: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  /// Load existing gender data from Firebase (optional - for returning users)
+  Future<void> _loadExistingGender() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user?.uid == null) return;
+
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .collection('user_profile')
+          .doc('gender')
+          .get();
+
+      if (doc.exists && doc.data()?['gender'] != null) {
+        setState(() {
+          selectedGender = doc.data()!['gender'];
+        });
+      }
+    } catch (e) {
+      // Silently handle errors for loading existing data
+      debugPrint('Error loading existing gender: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Load existing gender data when screen initializes
+    _loadExistingGender();
   }
 
   @override
@@ -74,10 +150,7 @@ class _GenderScreenState extends State<GenderScreen> {
                   // 📋 Subtitle
                   const Text(
                     'To give you better experience and result\nwe need to know your gender',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white70,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.white70),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 40),
@@ -129,24 +202,31 @@ class _GenderScreenState extends State<GenderScreen> {
                   const SizedBox(height: 30),
                   // 👉 Next arrow button (disabled unless something is selected)
                   AnimatedOpacity(
-                    opacity: selectedGender != null ? 1 : 0.5,
+                    opacity: selectedGender != null && !isLoading ? 1 : 0.5,
                     duration: const Duration(milliseconds: 200),
                     child: GestureDetector(
-                      onTap: selectedGender != null ? _goToNextScreen : null,
+                      onTap: selectedGender != null && !isLoading
+                          ? _saveGenderAndContinue
+                          : null,
                       child: Container(
                         width: 60,
                         height: 60,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: selectedGender != null
+                          color: selectedGender != null && !isLoading
                               ? Colors.pinkAccent
                               : Colors.white24,
                         ),
-                        child: const Icon(
-                          Icons.arrow_forward_rounded,
-                          color: Colors.white,
-                          size: 32,
-                        ),
+                        child: isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              )
+                            : const Icon(
+                                Icons.arrow_forward_rounded,
+                                color: Colors.white,
+                                size: 32,
+                              ),
                       ),
                     ),
                   ),
@@ -162,10 +242,10 @@ class _GenderScreenState extends State<GenderScreen> {
 
 /// 💡 Reusable widget for displaying a gender option with icon and highlight.
 class GenderButton extends StatelessWidget {
-  final String label;        // Gender name (Male/Female/Others)
-  final IconData icon;       // Icon to show
-  final bool selected;       // Whether this button is currently selected
-  final VoidCallback onTap;  // Tap handler
+  final String label; // Gender name (Male/Female/Others)
+  final IconData icon; // Icon to show
+  final bool selected; // Whether this button is currently selected
+  final VoidCallback onTap; // Tap handler
 
   const GenderButton({
     required this.label,
