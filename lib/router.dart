@@ -40,7 +40,7 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/',
       pageBuilder: (context, state) =>
-          _buildTransitionPage(context, state, const GenderScreen()),
+          _buildTransitionPage(context, state, const LoginScreen()),
     ),
     GoRoute(
       path: '/gender',
